@@ -82,27 +82,6 @@ export default function useFirestore(collectionName: string){
     };
 
    
-    async function queryAllFlats<FlatData>(): Promise<FlatData[]> {
-        try {
-            const querySnapshot = await getDocs(collectionRef);
-
-            if(querySnapshot.empty) {
-                console.warn(`No documents found in ${collectionName}`);
-                return [];
-            }
-
-            const flats = querySnapshot.docs.map((doc) => ({
-                ...doc.data(),  
-                id: doc.id,    
-            })) as FlatData[];
-          
-            return flats 
-        } catch (error) {
-            console.error("Error fetching documents from Firestore:", error);
-            return [];
-        }
-    }
-
     async function getFavouriteFlats(userId: string): Promise<string[]> {
         try {
           const userRef = doc(firestoreDB, "users", userId);
@@ -128,7 +107,7 @@ export default function useFirestore(collectionName: string){
           } catch (error) {
             console.error("Error updating favorite flats:", error);
           }
-      }
+    }
     
     async function removeDocument(
         docId: string
@@ -214,7 +193,6 @@ export default function useFirestore(collectionName: string){
         removeUser,
         getAllUsers,
         addFlatDocument,
-        queryAllFlats,
         getFavouriteFlats,
         updateFavouriteFlats,
         removeDocument,

@@ -2,11 +2,12 @@ import useAuth from "../../hooks/useAuth";
 import { PropsWithChildren, useState, useEffect } from "react";
 import {  UserData } from "../../types/userData";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../config/firebase";
+import { auth, firestoreDB } from "../../config/firebase";
 import useFirestore from "../../hooks/useFirestore";
 
 import { AuthContext } from "./AuthContext";
 import dayjs from "dayjs";
+import { doc, onSnapshot } from "firebase/firestore";
 
 
 export const AuthContextProvider = ({ children }: PropsWithChildren) => {
@@ -50,8 +51,25 @@ export const AuthContextProvider = ({ children }: PropsWithChildren) => {
     },[]);
 
     useEffect(() => {
-        console.log(currentUser)
-    })
+        if (currentUser) {
+            const userRef = doc(firestoreDB, "users", currentUser.id);
+
+            const unsubscribeSnapshot = onSnapshot(userRef, (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const updatedUserData = docSnapshot.data() as UserData;
+                    setCurrentUser((prevState) => ({
+                        ...prevState,
+                        ...updatedUserData,
+                        birthDate: dayjs(updatedUserData.birthDate?.toDate()),
+                    }));
+                }
+            });
+
+            return () => unsubscribeSnapshot();
+        }
+    }, [currentUser]);
+
+    
     return (
         <AuthContext.Provider value={{
             currentUser,

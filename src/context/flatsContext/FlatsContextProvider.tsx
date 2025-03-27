@@ -1,59 +1,69 @@
 import { PropsWithChildren, useEffect, useState } from "react";
+import { firestoreDB } from "../../config/firebase"
 import { FlatsContext } from "./FlatsContext";
 import { FlatData } from "../../types/flatData";
 import useFirestore from "../../hooks/useFirestore";
 import useAuthContext from "../../hooks/useAuthContext";
 import dayjs from "dayjs";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 
 
 export const FlatsContextProvider = ({children }: PropsWithChildren) => {
     const [flats, setFlats] = useState<FlatData[]>([]);
-    const { addFlatDocument, removeDocument, updateDocument, queryAllFlats,getFavouriteFlats, updateFavouriteFlats} = useFirestore("Flats")
+    const { addFlatDocument, removeDocument, updateDocument, updateFavouriteFlats} = useFirestore("Flats")
     const { currentUser } = useAuthContext();
     const [favouriteFlatsIds, setFavouriteFlatsIds] = useState<string[]>([]);
 
     useEffect(() => {
-        const fetchFlats = async () => {
-            const fetchedFlats = await queryAllFlats<FlatData>();
-            const flatsWithId = fetchedFlats.map((flat) => ({
-                ...flat,
-                id: flat.id,  
-                dateAvailable: dayjs(flat.dateAvailable.toDate())
-            }));
-            
-            setFlats(flatsWithId);
-        };
-        fetchFlats();
+        const flatCollectionRef = collection(firestoreDB, "Flats");
+
+        const unsubscribe = onSnapshot(flatCollectionRef, (snapshot) => {
+            const updatedFlats: FlatData[] = snapshot.docs.map((doc) => {
+                const data = doc.data();
+                return {
+                    ...(data as FlatData),
+                    id: doc.id,  
+                    dateAvailable: dayjs(data.dateAvailable.toDate()),
+                }
+            })
+            setFlats(updatedFlats)
+        })
+        return () => unsubscribe();
+       
     }, []);
 
 
     const addFlat = async ( data: FlatData) => {
 
-        const flatWithId = await addFlatDocument(data);
-        setFlats((prevFlats) => [...prevFlats, flatWithId]);
-    }
+        await addFlatDocument(data);
+    };
 
     const deleteFlat = async (id: string) => {
         await removeDocument(id)
-        setFlats((prevFlats) => prevFlats.filter(flat => flat.id !== id ))
+       
     }
     
     const updateFlat = async (id: string, data: FlatData) => {
         await updateDocument(id,{...data, dateAvailable: data.dateAvailable.toDate()})
-        setFlats((prevFlats) => prevFlats.map(flat => flat.id === id ? {...flat, ...data} : flat));
+    
     }
 
     useEffect(() => {
         if (!currentUser) return;
 
-        async function fetchFavourites() {
-            if(currentUser){
-                const favoriteFlatsIds = await getFavouriteFlats(currentUser.id);
-                setFavouriteFlatsIds(favoriteFlatsIds );
-            }
-        }
+        const userFavRef = doc(firestoreDB, "users", currentUser.id);
 
-        fetchFavourites();
+        const unsubscribe = onSnapshot(userFavRef, (docSnapshot) => {
+            if( docSnapshot.exists()){
+                const favouriteFlatsIds = docSnapshot.data().favouriteFlats || [];
+                setFavouriteFlatsIds(favouriteFlatsIds)
+            }else{
+                setFavouriteFlatsIds([])
+            }
+        })
+
+        return () => unsubscribe()
+       
     }, [currentUser]);
     
     const toggleFavourite = async (flatId: string) => {
@@ -71,7 +81,6 @@ export const FlatsContextProvider = ({children }: PropsWithChildren) => {
 
             await updateFavouriteFlats(currentUser.id, updatedFavorites);
 
-            setFavouriteFlatsIds(updatedFavorites);
         } catch (error) {
           console.error("Error toggling favorite:", error);
         }
