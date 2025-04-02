@@ -1,50 +1,38 @@
-# React + TypeScript + Vite
+## FlatFinder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+![Screenshot 2025-04-02 at 13-41-28 Flat Finder](https://github.com/user-attachments/assets/b240f3f2-7775-42cd-92de-6b5d46c601d3)
+---
+![Screenshot 2025-04-02 at 13-46-26 Flat Finder](https://github.com/user-attachments/assets/df081589-a506-474c-8922-10042119c308)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+:point_right: [live demo](https://flat-finder-gamma.vercel.app/)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+---
 
-- Configure the top-level `parserOptions` property like this:
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## About 
+Flat Finder is a web application designed to help users search for properties based on various criteria such as location and price. The plataform allows users to save favorite listings, view propertie details, and manage their profiles.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Features
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+- Apartment Search: Users can filter flats by city, price and size;
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+- User Authentication: Secure authentication using Firebase.
+
+- Favorites: Users can save houses as favorites for easy access.
+
+- Admin Dashboard: Admins can manage users.
+
+- Responsive UI: Built with Material-UI for a modern and responsive design.
+
+
+## Tech Stack
+
+- Frontend: React (with TypeScript), Material-UI
+
+- Database: Firebase Firestore 
+
+- Authentication: Firebase Auth
+
+- Hosting: Vercel
